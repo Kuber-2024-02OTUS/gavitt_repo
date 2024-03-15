@@ -48,7 +48,7 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
         ports:
-          - containerPort:  800
+          - containerPort:  8000
         volumeMounts:
           - name: homework-volume
             mountPath: "/homework"
