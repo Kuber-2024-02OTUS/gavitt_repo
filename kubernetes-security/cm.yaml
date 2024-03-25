@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-configmap
+  namespace: homework
+  labels:
+    app: myapp
+data:
+  file: test-value
