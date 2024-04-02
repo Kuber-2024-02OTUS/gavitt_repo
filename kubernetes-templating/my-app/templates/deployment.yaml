@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  {{ include "my-app.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "my-app.selectorLabels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "my-app.selectorLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    {{- toYaml .Values.strategy | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "my-app.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: init-{{ include "my-app.fullname" . }}
+          image: {{ .Values.imageInit.repository}}:{{ .Values.imageInit.tag}}
+          volumeMounts:
+            - name: homework-volume
+              mountPath: "/init"
+          command: ["/bin/sh", "-c"]
+          args:
+            - wget -O /init/index.html https://freetestdata.com/wp-content/uploads/2023/03/sample_html_file.html
+      containers:
+        - name:  {{ include "my-app.fullname" . }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12}}
+          readinessProbe:
+            {{- toYaml .Values.readnessProbe | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          ports:
+            - containerPort:  {{ .Values.service.port }}
+          volumeMounts:
+            - name: homework-volume
+              mountPath: "/homework"
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/conf.d/
+            - name: myapp-configmap
+              mountPath: "/homework/conf"
+      volumes:
+        - name: homework-volume
+          persistentVolumeClaim:
+            claimName: pvc-myapp
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-conf
+        - name: myapp-configmap
+          configMap:
+            name: myapp-configmap
+      nodeSelector:
+        homework: "true"
+      restartPolicy: Always

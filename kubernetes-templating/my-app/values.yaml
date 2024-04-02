@@ -1,0 +1,54 @@
+namespace: homework
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: "1.20"
+
+imageInit:
+  repository: busybox
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+strategy:
+  rollingUpdate:
+    maxSurge: 2
+    maxUnavailable: 1
+  type: RollingUpdate
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  host: homework.otus
+  paths:
+    - path: /
+      pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+livenessProbe:
+  httpGet:
+    path: /index.html
+    port: 8000
+  initialDelaySeconds: 3
+  periodSeconds: 3
+
+readnessProbe:
+  httpGet:
+    path: /index.html
+    port: 8000
+  initialDelaySeconds: 3
+  periodSeconds: 3
+

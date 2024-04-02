@@ -1,0 +1,16 @@
+releases:
+  # Для продуктового окружения
+  - name: kafka-prod
+    namespace: prod
+    chart: oci://registry-1.docker.io/bitnamicharts/kafka
+    version: 23.0.0
+    values:
+      - kafka-prod-values.yaml
+
+  # Для разработочного окружения
+  - name: kafka-dev
+    namespace: dev
+    chart: oci://registry-1.docker.io/bitnamicharts/kafka
+    version: 23.0.0
+    values:
+      - kafka-dev-values.yaml
