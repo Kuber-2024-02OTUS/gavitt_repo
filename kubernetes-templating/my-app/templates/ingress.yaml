@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "my-app.fullname" . }}
+  namespace: {{ .Values.namespace }}
+spec:
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      {{- toYaml .Values.ingress.paths | nindent 6 }}
+        backend:
+          service:
+            name: {{ include "my-app.fullname" . }}
+            port:
+              name: http
