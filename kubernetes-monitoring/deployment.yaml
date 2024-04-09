@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  my-deploy
+  namespace: homework
+  labels:
+    app: myapp
+spec:
+  selector:
+    matchLabels:
+      app: myapp
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  myapp
+    spec:
+      containers:
+      - name:  web-server
+        image:  nginx:1.20
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /nginx_status
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        ports:
+          - containerPort:  80
+        volumeMounts:
+          - name: nginx-config-volume
+            mountPath: /etc/nginx/conf.d/
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-conf
+      restartPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-prometheus-exporter
+  namespace: homework
+  labels:
+    app: nginx-prometheus-exporter
+spec:
+  selector:
+    matchLabels:
+      app: nginx-prometheus-exporter
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx-prometheus-exporter
+    spec:
+      containers:
+        - name: nginx-prometheus-exporter
+          image: "nginx/nginx-prometheus-exporter:1.1.0"
+          imagePullPolicy: Always
+          args: ["--nginx.scrape-uri", "http://10.97.145.144/nginx_status"]
+          ports:
+            - containerPort: 9113
+              name: http-mon
+
